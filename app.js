@@ -5,20 +5,6 @@ const raiseFund = require('./raiseFund');
 
 const app = express();
 
-app.get(`/`, (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.get(`/logo`, (req, res) => {
-  const logo = path.join(__dirname, 'logo.png');
-  const content = fs.readFileSync(logo, {
-    encoding: 'base64',
-  });
-  res.set('Content-Type', 'image/png');
-  res.send(Buffer.from(content, 'base64'));
-  res.status(200).end();
-});
-
 app.get('/get-data', (req, res) => {
   raiseFund.query(req.query.url).then(data => res.send(data)).catch(e => {
     console.error("发送异常", e);
@@ -33,6 +19,9 @@ app.get('/404', (req, res) => {
 app.get('/500', (req, res) => {
   res.status(500).send('Server Error');
 });
+
+app.use('/', express.static('public'));
+
 
 // Error handler
 app.use(function (err, req, res, next) {
