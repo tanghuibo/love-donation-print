@@ -9,6 +9,7 @@
       display: none;
     }
   </style>
+  <link rel="icon" href="./favicon.ico">
   <link rel="stylesheet" href="./resource/index.css">
   <style type="text/css">
     .all-amt {
@@ -78,7 +79,9 @@
         </el-form-item>
       </el-form>
       <div v-if="amt > 0" class="noprint">
-        <div style="text-align: center;"><el-button @click="print">打印</el-button></div>
+        <div style="text-align: center;">
+          <el-button @click="print">打印</el-button>
+        </div>
         <div class="all-amt">
           总金额 <span>{{amt}}</span>
         </div>
