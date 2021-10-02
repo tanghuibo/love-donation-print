@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <!-- import CSS -->
+  <style type="text/css" media="print">
+    .noprint {
+      display: none;
+    }
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <style type="text/css">
+    .all-amt {
+      text-align: center;
+      font-size: 20px;
+    }
+
+    .content-box {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      page-break-after: always;
+    }
+
+    .content-item {
+      border: 1px solid #909399;
+      width: 30%;
+      display: inline-flex;
+      margin: 0 -1px -1px 0;
+      padding: 2px;
+    }
+
+    .head-image {
+      width: 66px;
+      height: 66px;
+      border-radius: 5px;
+    }
+
+    .content-item-left {
+      width: 70px;
+    }
+
+    .content-item-right {
+      flex: 1;
+      margin-left: 4px;
+    }
+
+    .nick-name {
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .amt {
+      display: inline-block;
+      width: 66px;
+      text-align: center;
+    }
+
+    .comment {
+      margin-top: 10px;
+      color: #303133;
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div>
+      <el-form v-if="data.length === 0" :inline="true" ref="form" :model="form" @submit.native.prevent>
+        <el-form-item label="爱心筹款地址" prop="url" required>
+          <el-input v-model="form.url" placeholder="请输入爱心筹款地址"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="onSubmit" :loading="loading">查询</el-button>
+        </el-form-item>
+      </el-form>
+      <div v-if="amt > 0" class="noprint">
+        <div style="text-align: center;"><el-button @click="print">打印</el-button></div>
+        <div class="all-amt">
+          总金额 <span>{{amt}}</span>
+        </div>
+      </div>
+
+      <div class="content-box" v-for="list of data" :key="Math.random() + list.length">
+        <div class="content-item" v-for="item of list" :key="item.id">
+          <div class="content-item-left">
+            <el-image class="head-image" :src="item.headImgUrl" :fit="fit"></el-image>
+            <div class="amt">¥{{ item.amt }}</div>
+          </div>
+          <div>
+            <div class="content-item-right">
+              <div class="nick-name">
+                {{ item.nickname }}
+              </div>
+              <div class="comment">
+                {{ item.comment }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-if="list.length % 3 != 0" class="content-item"></div>
+        <div v-if="list.length % 3 != 0 && list.length % 3 < 2" class="content-item"></div>
+      </div>
+    </div>
+  </div>
+</body>
+<!-- import Vue before Element -->
+<script src="http://unpkg.com/vue/dist/vue.js"></script>
+<!-- import JavaScript -->
+<script src="http://unpkg.com/element-ui/lib/index.js"></script>
+<script src="http://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+  function to2D(list, size) {
+    let resultList = [];
+    let start = 0;
+    while (list.length > start) {
+      resultList.push(list.slice(start, Math.min(list.length, size + start)));
+      start = start + size;
+    }
+    return resultList;
+  }
+  new Vue({
+    el: '#app',
+    data: function () {
+      return {
+        data: [],
+        loading: false,
+        amt: 0,
+        form: {
+          url: ""
+        }
+      }
+    },
+    methods: {
+      print() {
+        window.print();
+      },
+      onSubmit() {
+        this.$refs.form.validate((valid) => {
+          if (valid) {
+            this.queryData();
+          }
+        });
+      },
+      async queryData() {
+        this.loading = true;
+        try {
+          let result = await axios.get("/get-data", {
+            params: {
+              url: this.form.url
+            }
+          });
+          this.amt = result.data.reduce((a, b) => a + b.amt, 0);
+          this.data = to2D(result.data, 30);
+        } catch (e) {
+          this.$message.error(e);
+        } finally {
+          this.loading = false;
+        }
+
+
+      }
+    }
+  })
+</script>
+
+</html>
